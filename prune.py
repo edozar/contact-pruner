@@ -113,6 +113,8 @@ def _is_protected(p: dict) -> str | None:
         pass
     if p.get("hs_sales_email_last_replied"):
         return "replied_to_sales"
+    if (p.get("hs_lead_status") or "").upper() == "UNQUALIFIED":
+        return "already_unqualified"
     return None
 
 # ── HubSpot search ─────────────────────────────────────────────────────────────
