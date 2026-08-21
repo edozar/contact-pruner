@@ -326,7 +326,7 @@ def scan() -> None:
         f"<b>Ghosts</b> ({ghost_count}): Free, 90+ days old, never opened, never joined, never converted.\n"
         f"  Action if approved: <b>archived</b> (soft delete, 90d restore window)\n\n"
         f"<b>Watchers</b> ({watcher_count}): Free, 90+ days old, opened emails, but never joined or converted.\n"
-        f"  Action if approved: <b>tagged DISQUALIFIED</b> (kept in CRM, excluded from campaigns)\n\n"
+        f"  Action if approved: <b>tagged UNQUALIFIED</b> (kept in CRM, excluded from campaigns)\n\n"
         f"Review the attached CSVs.\n"
         f"<b>Reply here with any emails to KEEP</b> (one per line or comma-separated).\n"
         f"Then run:\n<code>python prune.py --execute {run_id}</code>"
@@ -347,7 +347,7 @@ def scan() -> None:
     if watchers:
         watcher_csv = _build_watcher_csv(watchers)
         _tg_send_document(f"watchers_{run_id}.csv", watcher_csv,
-                          f"Watchers ({watcher_count}) — candidates for DISQUALIFIED tag")
+                          f"Watchers ({watcher_count}) — candidates for UNQUALIFIED tag")
         print(f"  sent watcher CSV ({watcher_count} rows)")
 
     # Save run state
@@ -421,7 +421,7 @@ def execute(run_id: str) -> None:
             watchers_to_tag.append(cid)
 
     print(f"\nFinal: archive {len(ghosts_to_archive)} ghosts, "
-          f"tag {len(watchers_to_tag)} watchers as DISQUALIFIED")
+          f"tag {len(watchers_to_tag)} watchers as UNQUALIFIED")
 
     if not ghosts_to_archive and not watchers_to_tag:
         print("Nothing to do.")
@@ -438,7 +438,7 @@ def execute(run_id: str) -> None:
     # Send confirmation
     lines = [f"<b>Contact Pruner — Execute {run_id}</b>\n"]
     lines.append(f"Archived (deleted) ghosts: <b>{archived}</b>")
-    lines.append(f"Tagged watchers DISQUALIFIED: <b>{tagged}</b>")
+    lines.append(f"Tagged watchers UNQUALIFIED: <b>{tagged}</b>")
     if keep_emails:
         lines.append(f"Kept per your reply: {len(keep_emails)} emails")
     _tg_send_message("\n".join(lines))
@@ -456,7 +456,7 @@ def execute(run_id: str) -> None:
     log_path = OUTPUT / f"execute_{run_id}.json"
     log_path.write_text(json.dumps(log, indent=2))
     print(f"\nLog saved: {log_path}")
-    print(f"Done. {archived} archived, {tagged} tagged DISQUALIFIED.")
+    print(f"Done. {archived} archived, {tagged} tagged UNQUALIFIED.")
 
 
 def _archive_contacts(ids: list[str]) -> int:
@@ -496,7 +496,7 @@ def _tag_disqualified(ids: list[str]) -> int:
     for i in range(0, len(ids), 100):
         chunk = ids[i:i + 100]
         payload = json.dumps({
-            "inputs": [{"id": c, "properties": {"hs_lead_status": "DISQUALIFIED"}}
+            "inputs": [{"id": c, "properties": {"hs_lead_status": "UNQUALIFIED"}}
                        for c in chunk]
         }).encode()
         req = urllib.request.Request(url, data=payload,
