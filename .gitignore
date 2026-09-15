@@ -5,3 +5,7 @@ output/
 __pycache__/
 *.pyc
 .DS_Store
+
+# any .env variant (e.g. .env.disabled-moved-to-node) holds secrets; only the example is tracked
+.env*
+!.env.example
